@@ -1,1 +1,84 @@
-this is just a text file...
+using MVCNestedWebgrid.ViewModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace MVCNestedWebgrid.Controllers
+{
+    public class OrderController : Controller
+    {
+        //
+        // GET: /Order/
+
+        public ActionResult List()
+        {
+            List<OrderVM> allOrder = new List<OrderVM>();
+
+            foreach (var i in GetOrderMaster())
+            {
+                //var od = GetOrderDetail().Where(a => a.OrderID.Equals(i.OrderID)).ToList();
+                allOrder.Add(new OrderVM { order = i, orderDetails = GetOrderDetail() });
+            }
+
+            // here MyDatabaseEntities is our data context
+            //using (MyDatabaseEntities dc = new MyDatabaseEntities())
+            //{
+            //    var o = dc.OrderMasters.OrderByDescending(a => a.OrderID);
+            //    foreach (var i in o)
+            //    {
+            //        var od = dc.OrderDetails.Where(a => a.OrderID.Equals(i.OrderID)).ToList();
+            //        allOrder.Add(new OrderVM { order= i, orderDetails = od });
+            //    }
+            //}
+            return View(allOrder);
+        }
+
+        private List<OrderMaster> GetOrderMaster()
+        {
+            var listOrderMaster = new List<OrderMaster>();
+
+            var ordmaseter = new OrderMaster()
+            {
+                CustomerAddress = "test address",
+                CustomerName = "Rohit",
+                OrderAmount = 100,
+                OrderDate = DateTime.Now,
+                OrderID = 1
+            };
+
+            listOrderMaster.Add(ordmaseter);
+            return listOrderMaster;
+        }
+
+
+        private List<OrderDetail> GetOrderDetail()
+        {
+            var list = new List<OrderDetail>();
+            var orderDetail1 = new OrderDetail()
+            {
+                OrderDetailsID = 1,
+                OrderID = 1,
+                Amount = 10,
+                Product = "product01",
+                Quantity = 18,
+                Rate = 2
+            };
+
+            var orderDetail2 = new OrderDetail()
+            {
+                OrderDetailsID = 2,
+                OrderID = 1,
+                Amount = 11,
+                Product = "product02",
+                Quantity = 77,
+                Rate = 9
+            };
+
+            list.Add(orderDetail1);
+
+            return list;
+        }
+    }
+}
