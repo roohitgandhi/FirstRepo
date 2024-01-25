@@ -1,0 +1,79 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Define the queue of files to process
+        Queue<string> filesToProcess = new Queue<string>();
+        filesToProcess.Enqueue("file1.txt");
+        filesToProcess.Enqueue("file2.txt");
+        filesToProcess.Enqueue("file3.txt");
+
+        // Define the number of retries
+        int retries = 3;
+
+        // Define the timer interval
+        int timerInterval = 5000;
+
+        // Create the timer
+        Timer timer = new Timer(TimerCallback, null, 0, timerInterval);
+
+        // Process each file in the queue
+        while (filesToProcess.Count > 0)
+        {
+            string file = filesToProcess.Dequeue();
+
+            // Attempt to process the file
+            bool success = false;
+            while (!success && retries > 0)
+            {
+                try
+                {
+                    ProcessFile(file);
+                    success = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error processing file: " + file);
+                    Console.WriteLine("Error message: " + ex.Message);
+                    Console.WriteLine("Retrying in 5 seconds...");
+                    Thread.Sleep(5000);
+                    retries--;
+                }
+            }
+
+            // If the file was not processed successfully after all retries, log an error
+            if (!success)
+            {
+                Console.WriteLine("Error processing file: " + file);
+                Console.WriteLine("File will not be processed.");
+            }
+        }
+    }
+
+    static void ProcessFile(string file)
+    {
+        // Process the file here
+        Console.WriteLine("Processing file: " + file);
+    }
+
+    static void TimerCallback(Object o)
+    {
+        // Define the directory to monitor
+        string directoryPath = @"C:\MyDirectory";
+
+        // Get the list of files in the directory
+        string[] files = Directory.GetFiles(directoryPath);
+
+        // Add the files to the queue
+        foreach (string file in files)
+        {
+            Console.WriteLine("File added to queue: " + file);
+            filesToProcess.Enqueue(file);
+        }
+    }
+}
