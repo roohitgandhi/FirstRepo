@@ -1,0 +1,43 @@
+To enable HTTPS on your ASP.NET MVC 5 website hosted on IIS server, you'll need to obtain an SSL certificate and configure your server to use it. Here's a step-by-step guide to help you achieve that:
+
+Obtain an SSL Certificate:
+You can obtain an SSL certificate from a trusted Certificate Authority (CA). There are several options available, including paid certificates from providers like Comodo, Symantec, or free certificates from Let's Encrypt.
+
+Install the SSL Certificate on Your Server:
+Once you have obtained the SSL certificate, you need to install it on your server. This process may vary depending on your certificate provider and server configuration. Usually, you can import the certificate into the server's certificate store using tools like MMC (Microsoft Management Console).
+
+Configure HTTPS Binding in IIS:
+After installing the SSL certificate, you need to configure HTTPS binding for your website in IIS. Here's how you can do it:
+
+Open IIS Manager.
+Select your website from the connections pane.
+In the Actions pane, click on "Bindings".
+Click "Add" to add a new binding.
+Choose HTTPS as the type, select your SSL certificate from the drop-down list, and then click OK.
+Update Your ASP.NET MVC Application:
+Ensure that your ASP.NET MVC application is configured to work with HTTPS. Update any hardcoded URLs in your code to use "https://" instead of "http://". Also, make sure any AJAX requests or resources are loaded using HTTPS.
+
+Redirect HTTP to HTTPS (Optional but Recommended):
+To enforce HTTPS and ensure all traffic is encrypted, you can set up a URL rewrite rule to redirect HTTP requests to HTTPS. Here's a sample rule you can use in your web.config file:
+
+xml
+Copy code
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="HTTP to HTTPS redirect" stopProcessing="true">
+          <match url="(.*)" />
+          <conditions>
+            <add input="{HTTPS}" pattern="off" />
+          </conditions>
+          <action type="Redirect" url="https://{HTTP_HOST}/{R:1}" redirectType="Permanent" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>
+Test Your Website:
+After configuring HTTPS, thoroughly test your website to ensure that it works correctly over HTTPS. Check for any mixed content warnings, ensure that all resources are loaded securely, and verify that redirection from HTTP to HTTPS is working as expected.
+
+By following these steps, you should be able to successfully enable HTTPS for your ASP.NET MVC 5 website hosted on IIS server.
