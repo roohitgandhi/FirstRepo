@@ -1,0 +1,42 @@
+# Define the path where the CSV files will be saved
+$csvPath = "C:\path\to\save\csv\"
+
+# Define the connection string to your database
+$connectionString = "Server=your_server;Database=your_database;User Id=your_username;Password=your_password;"
+
+# List your stored procedures
+$storedProcedures = @("StoredProcedure1", "StoredProcedure2", "StoredProcedure3")
+
+foreach ($sp in $storedProcedures) {
+    # Define the query to execute the stored procedure
+    $query = "EXEC $sp"
+
+    # Create a DataTable to hold the result
+    $dataTable = New-Object System.Data.DataTable
+
+    # Open SQL connection
+    $sqlConnection = New-Object System.Data.SqlClient.SqlConnection $connectionString
+    $sqlConnection.Open()
+
+    # Execute the stored procedure
+    $command = $sqlConnection.CreateCommand()
+    $command.CommandText = $query
+    $reader = $command.ExecuteReader()
+
+    # Load the data into the DataTable
+    $dataTable.Load($reader)
+
+    # Close the SQL connection
+    $sqlConnection.Close()
+
+    # Define the CSV file name based on the stored procedure name
+    $csvFileName = $csvPath + $sp + ".csv"
+
+    # Export the result to a CSV file
+    $dataTable | Export-Csv $csvFileName -NoTypeInformation
+}
+
+Write-Host "Stored procedures have been executed and results saved to CSV files."
+
+Make sure to replace C:\path\to\save\csv\, your_server, your_database, your_username, and your_password with your actual file path and database credentials. Also, replace StoredProcedure1, StoredProcedure2, and StoredProcedure3 with the names of your actual stored procedures.
+
