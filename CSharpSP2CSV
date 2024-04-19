@@ -1,0 +1,70 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
+using System.Text;
+
+class Program
+{
+    static void Main()
+    {
+        // Define the path where the CSV files will be saved
+        string csvPath = @"C:\path\to\save\csv\";
+
+        // Define the connection string to your database
+        string connectionString = "Server=your_server;Database=your_database;User Id=your_username;Password=your_password;";
+
+        // List your stored procedures
+        string[] storedProcedures = { "StoredProcedure1", "StoredProcedure2", "StoredProcedure3" };
+
+        foreach (var sp in storedProcedures)
+        {
+            // Call the stored procedure and get the result set
+            DataTable dataTable = GetDataTableFromStoredProcedure(connectionString, sp);
+
+            // Define the CSV file name based on the stored procedure name
+            string csvFileName = Path.Combine(csvPath, sp + ".csv");
+
+            // Export the result to a CSV file
+            SaveDataTableToCSV(dataTable, csvFileName);
+        }
+
+        Console.WriteLine("Stored procedures have been executed and results saved to CSV files.");
+    }
+
+    static DataTable GetDataTableFromStoredProcedure(string connectionString, string storedProcedure)
+    {
+        using (var connection = new SqlConnection(connectionString))
+        {
+            using (var command = new SqlCommand(storedProcedure, connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                using (var adapter = new SqlDataAdapter(command))
+                {
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+                    return dataTable;
+                }
+            }
+        }
+    }
+
+    static void SaveDataTableToCSV(DataTable dataTable, string filePath)
+    {
+        StringBuilder csvContent = new StringBuilder();
+
+        // Add the headers
+        string[] columnNames = Array.ConvertAll(dataTable.Columns.Cast<DataColumn>().ToArray(), column => column.ColumnName);
+        csvContent.AppendLine(string.Join(",", columnNames));
+
+        // Add the data rows
+        foreach (DataRow row in dataTable.Rows)
+        {
+            string[] fields = row.ItemArray.Select(field => field.ToString()).ToArray();
+            csvContent.AppendLine(string.Join(",", fields));
+        }
+
+        // Write to CSV file
+        File.WriteAllText(filePath, csvContent.ToString());
+    }
+}
