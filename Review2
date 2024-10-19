@@ -1,0 +1,30 @@
+Added business value:attestation process configurable
+Option 2:
+“I have implemented a new approach to [business process] that has reduced processing time by [X percentage]. By [specific changes], I have optimized the number of [businesses] required, leading to a more efficient and effective process.”
+
+Option 3:
+“I am proud to announce that I have achieved a significant reduction in the processing time for [business attestation process]. This improvement was made possible by [specific measures], which reduced the overall number of [businesses] involved. The streamlined process has resulted in [positive outcomes, such as increased productivity or cost savings].
+==========================================
+Process improved (Technical) File Loader multi threading:
+Option 1:
+“I have successfully enhanced the performance of the [file application] by implementing multithreading. Previously, the application experienced intermittent delays due to [specific issue]. By introducing multiple threads, I was able to [explain how multithreading improved performance, e.g., "process files concurrently" or "optimize resource utilization"]. This optimization has eliminated the previous performance bottlenecks and ensured a smooth and uninterrupted workflow.”
+
+Option 2:
+“I am pleased to report that I have significantly improved the responsiveness of the [file application] through the implementation of multithreading. The application's previous performance was hindered by [specific issue]. By dividing the workload into multiple threads, I have achieved [quantifiable improvement, e.g., "a 50% reduction in processing time"]. This enhancement has greatly improved user experience and overall efficiency.”
+
+Option 3:
+“I have successfully addressed the performance limitations of the [file application] by introducing multithreading. The application's [specific issue] was causing delays and interruptions. Through the use of multiple threads, I was able to [explain how multithreading improved performance]. This optimization has resulted in a more reliable and efficient application.”
+=======================================================================
+Process improvement: Sign off status new display.
+"I have developed a new display that enhances the business user's workflow by providing real-time visibility into the status of stresses. This feature streamlines the process by immediately indicating whether stresses have been signed off or are still pending, eliminating the need for manual verification."
+
+
+========================================================================
+Team collabration: Child stress sign off when parent sign off.
+While working on [Task Name], I engaged in a collaborative effort with my team to discuss the process of signing off on child stresses. We explored various perspectives and exchanged ideas to ensure a comprehensive understanding of the requirements and best practices.
+
+=====================================================================
+PROD: SRA Split
+I successfully resolved a complex issue affecting SR splitting across three interconnected applications. By conducting a thorough analysis of each application's functionality and dependencies, I was able to identify the root cause of the problem and implement a solution that restored normal operations.
+
+=======================================
