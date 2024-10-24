@@ -1,0 +1,13 @@
+WITH ParentHierarchy (ChildID, ParentID, Level) AS (
+    SELECT ChildID, ParentID, 1 AS Level
+    FROM YourTableName
+    WHERE ChildID = @ChildID -- Replace @ChildID with the actual child ID
+
+    UNION ALL
+
+    SELECT p.ChildID, p.ParentID, ph.Level + 1
+    FROM YourTableName p
+    INNER JOIN ParentHierarchy ph ON p.ChildID = ph.ParentID
+)
+SELECT ParentID
+FROM ParentHierarchy;
