@@ -1,0 +1,40 @@
+For a REST endpoint in an ASP.NET Web API (inheriting from ApiController), the previous MVC solution won't apply directly. Instead, you can create a custom attribute specifically for Web API. Here's how you can do it:
+
+Create a Custom Authorization Attribute:
+
+csharp
+using System.Web.Http;
+using System.Web.Http.Controllers;
+
+public class RequireHttpsAttribute : AuthorizeAttribute
+{
+    protected override void HandleUnauthorizedRequest(HttpActionContext actionContext)
+    {
+        if (!actionContext.Request.RequestUri.Scheme.Equals(Uri.UriSchemeHttps))
+        {
+            var uri = new UriBuilder(actionContext.Request.RequestUri)
+            {
+                Scheme = Uri.UriSchemeHttps,
+                Port = 443
+            }.Uri;
+
+            actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Found);
+            actionContext.Response.Headers.Location = uri;
+        }
+    }
+}
+Apply the Attribute to the Specific Endpoint:
+
+csharp
+[RequireHttps]
+public class MyApiController : ApiController
+{
+    [HttpGet]
+    public IHttpActionResult MyEndpoint()
+    {
+        return Ok("This endpoint is secured with HTTPS");
+    }
+}
+With this custom attribute, only the specified REST endpoint will be forced to use HTTPS. Other endpoints will remain accessible via HTTP.
+
+If you have other specific configurations or requirements, feel free to share, and we can tailor the solution further!
