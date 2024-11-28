@@ -1,0 +1,31 @@
+Dot Net Core:
+https://versionsof.net/core/
+8.0	
+Active (LTS)	2026-11-10
+
+am developing an appliation in dot net core 8 using c#. I need to create an enterprise level appliation which can consume thousands of messages from solace and process them. 
+what is the best approach in dot net core application
+
+
+learning curve: 
+1. Profiling Tools
+Logging and Monitoring: Implement comprehensive logging and monitoring to track application health, message processing rates, and error rates.
+
+Scalability: Design the application to scale horizontally by adding more worker threads or consumer instances.
+
+Monitoring and Logging: Implement comprehensive monitoring and logging to track application health and performance.
+
+Dead-Letter Queue: Consider using a dead-letter queue to store messages that cannot be processed successfully.
+
+Performance Tuning: Continuously tune the application's configuration, such as thread pool size and batch size, to optimize performance.
+
+IHosted Service - a background service.
+
+
+
+
+
+
+
+
+
