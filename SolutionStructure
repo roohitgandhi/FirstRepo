@@ -1,120 +1,35 @@
-Solution Structure
-API Layer: This will be your entry point where you expose your API endpoints.
-
-Application Layer: Contains business logic, use cases, and application services.
-
-Domain Layer: Defines entities, value objects, and domain services.
-
-Infrastructure Layer: Handles data access, external services, and other low-level concerns.
-
-Folder and Class Library Structure
-Let's outline a typical folder and class library structure for a clean architecture:
-
-Solution Name
-
-src
-
-YourProjectName.API
-
-Controllers
-
-Filters
-
-Middlewares
-
-Startup.cs
-
-YourProjectName.Application
-
-Interfaces
-
-Services
-
-Dtos
-
-Mappings
-
-UseCases
-
-YourProjectName.Domain
-
-Entities
-
-Enums
-
-Events
-
-Exceptions
-
-ValueObjects
-
-Specifications
-
-YourProjectName.Infrastructure
-
-Data
-
-Repositories
-
-Services
-
-Configurations
-
-Migrations
-
-AppDbContext.cs
-
-tests
-
-YourProjectName.Tests
-
-UnitTests
-
-IntegrationTests
-
-Creating the Solution
-Create a new solution:
-
-bash
-dotnet new sln -n YourSolutionName
-Create projects for each layer:
-
-bash
-dotnet new webapi -n YourProjectName.API
-dotnet new classlib -n YourProjectName.Application
-dotnet new classlib -n YourProjectName.Domain
-dotnet new classlib -n YourProjectName.Infrastructure
-Add projects to the solution:
-
-bash
-dotnet sln add src/YourProjectName.API/YourProjectName.API.csproj
-dotnet sln add src/YourProjectName.Application/YourProjectName.Application.csproj
-dotnet sln add src/YourProjectName.Domain/YourProjectName.Domain.csproj
-dotnet sln add src/YourProjectName.Infrastructure/YourProjectName.Infrastructure.csproj
-Add project references:
-
-bash
-dotnet add src/YourProjectName.API/YourProjectName.API.csproj reference src/YourProjectName.Application/YourProjectName.Application.csproj
-dotnet add src/YourProjectName.Application/YourProjectName.Application.csproj reference src/YourProjectName.Domain/YourProjectName.Domain.csproj
-dotnet add src/YourProjectName.Infrastructure/YourProjectName.Infrastructure.csproj reference src/YourProjectName.Application/YourProjectName.Application.csproj
-dotnet add src/YourProjectName.Infrastructure/YourProjectName.Infrastructure.csproj reference src/YourProjectName.Domain/YourProjectName.Domain.csproj
-Key Points
-API Layer: Contains controllers that handle HTTP requests.
-
-Application Layer: Implements business logic and handles application services.
-
-Domain Layer: Defines core entities and domain logic.
-
-Infrastructure Layer: Manages data access, external services, and infrastructure concerns.
-
-Additional Tips
-Use dependency injection to manage dependencies between layers.
-
-Apply SOLID principles to keep your codebase maintainable and extensible.
-
-Consider using MediatR for managing CQRS (Command Query Responsibility Segregation) patterns in your application layer.
-
-With this structure, you'll have a clean, organized, and maintainable architecture for your .NET Core Web API application. Need more details or assistance with any specific part? 😊
-
-
-
+YourSolutionName
+│   YourSolutionName.sln
+└─── src
+     ├─── YourProjectName.API
+     │    ├─── Controllers
+     │    ├─── Filters
+     │    ├─── Middlewares
+     │    │   └─── Startup.cs (with the necessary configurations)
+     │ 
+     ├─── YourProjectName.Application
+     │    ├─── Interfaces
+     │    ├─── Services
+     │    ├─── Dtos
+     │    ├─── Mappings
+     │    └─── UseCases
+     │
+     ├─── YourProjectName.Domain
+     │    ├─── Entities
+     │    ├─── Enums
+     │    ├─── Events
+     │    ├─── Exceptions
+     │    ├─── ValueObjects
+     │    └─── Specifications
+     │
+     ├─── YourProjectName.Infrastructure
+     │    ├─── Data
+     │    ├─── Repositories
+     │    ├─── Services
+     │    ├─── Configurations
+     │    ├─── Migrations
+     │    └─── AppDbContext.cs (for your database context)
+└─── tests
+     └─── YourProjectName.Tests
+          ├─── UnitTests
+          └─── IntegrationTests
