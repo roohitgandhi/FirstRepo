@@ -1,0 +1,60 @@
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+public class JsonHandler
+{
+    public async Task ModifyAndSendJsonAsync(string filePath, string endpoint)
+    {
+        // Step 1: Read the JSON file
+        var jsonString = await File.ReadAllTextAsync(filePath);
+
+        // Step 2: Deserialize the JSON
+        var jsonObject = JsonSerializer.Deserialize<YourClass>(jsonString);
+
+        // Step 3: Modify the properties
+        if (jsonObject != null)
+        {
+            jsonObject.Property1 = "NewValue1";
+            jsonObject.Property2 = "NewValue2";
+            // Modify other properties as needed
+        }
+
+        // Step 4: Serialize the updated object back to JSON
+        var updatedJsonString = JsonSerializer.Serialize(jsonObject);
+
+        // Step 5: Send the updated JSON to another application
+        using var client = new HttpClient();
+        var content = new StringContent(updatedJsonString, Encoding.UTF8, "application/json");
+        var response = await client.PostAsync(endpoint, content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("JSON successfully sent to the endpoint.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to send JSON. Status code: " + response.StatusCode);
+        }
+    }
+}
+
+// Define your class matching the JSON structure
+public class YourClass
+{
+    public string Property1 { get; set; }
+    public string Property2 { get; set; }
+    // Define other properties as needed
+}
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        var jsonHandler = new JsonHandler();
+        await jsonHandler.ModifyAndSendJsonAsync("path/to/your/jsonfile.json", "https://example.com/api/endpoint");
+    }
+}
