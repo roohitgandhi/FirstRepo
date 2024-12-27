@@ -1,0 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+public class JsonRequest
+{
+    [JsonPropertyName("cobdate")]
+    public DateTime CobDate { get; set; }
+
+    [JsonPropertyName("inputDataSources")]
+    public List<DataSource> InputDataSources { get; set; }
+}
+
+public class DataSource
+{
+    [JsonPropertyName("dataSourceName")]
+    public string DataSourceName { get; set; }
+
+    [JsonPropertyName("dataSourceInputPath")]
+    public string DataSourceInputPath { get; set; }
+}
