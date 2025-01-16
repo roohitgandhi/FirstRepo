@@ -1,0 +1,43 @@
+using System;
+using System.IO;
+using Newtonsoft.Json.Linq;
+
+class Program
+{
+    static void Main()
+    {
+        // Read JSON file
+        string jsonFilePath = "path/to/your/jsonfile.json";
+        string jsonString = File.ReadAllText(jsonFilePath);
+        JObject jsonObj = JObject.Parse(jsonString);
+
+        // Replace attributes up to 3rd level
+        TraverseAndReplace(jsonObj, "attributeToReplace", "newAttributeValue", 0, 3);
+
+        // Write modified JSON back to file
+        File.WriteAllText(jsonFilePath, jsonObj.ToString());
+    }
+
+    static void TraverseAndReplace(JToken token, string attributeName, string newAttributeValue, int currentLevel, int maxLevel)
+    {
+        if (token is JObject obj)
+        {
+            foreach (var property in obj.Properties())
+            {
+                if (currentLevel <= maxLevel && property.Name == attributeName)
+                {
+                    property.Value = newAttributeValue;
+                }
+
+                TraverseAndReplace(property.Value, attributeName, newAttributeValue, currentLevel + 1, maxLevel);
+            }
+        }
+        else if (token is JArray array)
+        {
+            foreach (var item in array)
+            {
+                TraverseAndReplace(item, attributeName, newAttributeValue, currentLevel, maxLevel);
+            }
+        }
+    }
+}
