@@ -1,0 +1,32 @@
+using System;
+using System.Collections.Generic;
+
+public class SystemConfig
+{
+    public List<System> Systems { get; set; }
+}
+
+public class System
+{
+    public string Name { get; set; }
+    public List<string> Steps { get; set; }
+    public Load Load { get; set; }
+    public Extract Extract { get; set; }
+    public ReconColumn ReconColumn { get; set; }
+}
+
+public class Load
+{
+    public bool UseSQL { get; set; }
+    public List<string> RenameColumns { get; set; }
+}
+
+public class Extract
+{
+    public bool SelectAllColumns { get; set; }
+    public List<string> SelectColumns { get; set; }
+}
+
+public class ReconColumn
+{
+}
