@@ -1,0 +1,55 @@
+using System.Text.Json;
+
+public class SystemData
+{
+    public string name { get; set; }
+    public LoadData load { get; set; }
+}
+
+public class LoadData
+{
+    public bool useSQL { get; set; }
+    public string sql { get; set; }
+}
+
+public class Root
+{
+    public List<SystemData> Systems { get; set; }
+}
+
+public class Example
+{
+    public static void Main(string[] args)
+    {
+        string jsonString = @"{
+              ""Systems"" : 
+              [
+                  {
+                      ""name"": ""name1"",
+                      ""load"": 
+                      {
+                          ""useSQL"": true,
+                          ""sql"": ""select * from Table01""
+                      }
+                  }
+              ]
+          }";
+
+        // Deserialize the JSON string
+        var root = JsonSerializer.Deserialize<Root>(jsonString, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true // Handle case-insensitive property names
+        });
+
+        // Access the "sql" value
+        if (root != null && root.Systems.Count > 0 && root.Systems[0].load.useSQL)
+        {
+            string sqlValue = root.Systems[0].load.sql;
+            Console.WriteLine($"SQL Value: {sqlValue}"); 
+        }
+        else
+        {
+            Console.WriteLine("SQL value not found or useSQL is false.");
+        }
+    }
+}
