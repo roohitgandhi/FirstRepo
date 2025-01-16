@@ -1,0 +1,57 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+public class MyObject
+{
+    public string Name { get; set; }
+    public List<SubObject> SubObjects { get; set; }
+}
+
+public class SubObject
+{
+    public string Id { get; set; }
+    public List<InnerObject> InnerObjects { get; set; }
+}
+
+public class InnerObject
+{
+    public string Value { get; set; }
+}
+
+public class Example
+{
+    public static void Main(string[] args)
+    {
+        // Load the JSON file
+        string jsonFilePath = "path/to/your/json/file.json"; 
+        string jsonString = File.ReadAllText(jsonFilePath);
+
+        // Parse the JSON string
+        JObject jsonObject = JObject.Parse(jsonString);
+
+        // Replace attributes (example: replace "old_value" with "new_value" in "Value" property)
+        foreach (var subObject in jsonObject["SubObjects"].Children())
+        {
+            foreach (var innerObject in subObject["InnerObjects"].Children())
+            {
+                if (innerObject["Value"].ToString() == "old_value")
+                {
+                    innerObject["Value"] = "new_value";
+                }
+            }
+        }
+
+        // Serialize the modified JSON object back to string
+        string updatedJsonString = jsonObject.ToString();
+
+        // Save the updated JSON string to a new file (optional)
+        string newJsonFilePath = "path/to/new/json/file.json"; 
+        File.WriteAllText(newJsonFilePath, updatedJsonString);
+
+        Console.WriteLine("JSON file updated successfully.");
+    }
+}
