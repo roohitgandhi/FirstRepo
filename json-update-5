@@ -1,0 +1,22 @@
+// Replace values in "sql" properties
+        foreach (var system in jsonObject["Systems"])
+        {
+            foreach (var property in system["load"].Children())
+            {
+                if (property is JProperty prop && prop.Name == "sql" && prop.Value.Type == JTokenType.String) 
+                {
+                    string originalSql = prop.Value.ToString(); 
+                    string updatedSql = originalSql;
+
+                    foreach (var replacement in replacements)
+                    {
+                        updatedSql = Regex.Replace(updatedSql, Regex.Escape(replacement.Key), replacement.Value);
+                    }
+
+                    prop.Value = updatedSql; 
+                }
+            }
+        }
+
+        // Get updated JSON string
+        string updatedJsonString = jsonObject.ToString();
