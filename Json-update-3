@@ -1,0 +1,69 @@
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+public class Example
+{
+    public static void Main(string[] args)
+    {
+        string jsonString = @"{
+              ""Systems"" : 
+              [
+                  {
+                      ""name"": ""name1"",
+                      ""load"": 
+                      {
+                          ""useSQL"": true,
+                          ""sql"": ""select * from Table01 where Column1 = 'old_value' and Column2 = 'another_old_value'"",
+                          "otherProperty": "someValue" 
+                      }
+                  }
+              ]
+          }";
+
+        // Parse the JSON string
+        JObject jsonObject = JObject.Parse(jsonString);
+
+        // Define replacements using regular expressions
+        Dictionary<string, string> replacements = new Dictionary<string, string>
+        {
+            { "old_value", "new_value" },
+            { "another_old_value", "new_value2" }
+        };
+
+        // Replace values in "sql" properties
+        foreach (var system in jsonObject["Systems"])
+        {
+            foreach (var property in system["load"].Children())
+            {
+                // Check if property is a JProperty (has a name)
+                if (property is JProperty prop)
+                {
+                    if (prop.Name == "sql")
+                    {
+                        string originalSql = prop.Value<string>();
+                        string updatedSql = originalSql;
+
+                        foreach (var replacement in replacements)
+                        {
+                            updatedSql = Regex.Replace(updatedSql, Regex.Escape(replacement.Key), replacement.Value);
+                        }
+
+                        prop.Value = updatedSql;
+                    }
+                }
+                else
+                {
+                    // Handle other JToken types (if needed)
+                    // ...
+                }
+            }
+        }
+
+        // Get updated JSON string
+        string updatedJsonString = jsonObject.ToString();
+
+        Console.WriteLine(updatedJsonString);
+    }
+}
