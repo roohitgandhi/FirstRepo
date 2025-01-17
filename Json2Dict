@@ -1,0 +1,47 @@
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string jsonResponse = @"{
+            ""name"": ""name1"",
+            ""filepath"": ""filepath001"",
+            ""load"": {
+                ""useSQL"": true,
+                ""sql"": ""select * from Table01""
+            }
+        }";
+
+        // Parse the JSON response into a JObject
+        JObject jObject = JObject.Parse(jsonResponse);
+
+        // Create a dictionary to hold the flattened key-value pairs
+        Dictionary<string, string> dictionary = new Dictionary<string, string>();
+
+        // Iterate through the properties and add them to the dictionary
+        foreach (var property in jObject.Properties())
+        {
+            if (property.Value.Type == JTokenType.Object)
+            {
+                // If the value is an object, iterate through its properties as well
+                foreach (var subProperty in property.Value.Children<JProperty>())
+                {
+                    dictionary.Add($"{property.Name}.{subProperty.Name}", subProperty.Value.ToString());
+                }
+            }
+            else
+            {
+                dictionary.Add(property.Name, property.Value.ToString());
+            }
+        }
+
+        // Print the dictionary content
+        foreach (var item in dictionary)
+        {
+            Console.WriteLine($"{item.Key}: {item.Value}");
+        }
+    }
+}
