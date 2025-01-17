@@ -1,0 +1,43 @@
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        string jsonResponse = @"[
+            {
+                ""name"": ""name1"",
+                ""filepath"": ""filepath001""
+            },
+            {
+                ""name"": ""name2"",
+                ""filepath"": ""filepath002""
+            }
+        ]";
+
+        // Parse the JSON response into a JArray
+        JArray jArray = JArray.Parse(jsonResponse);
+
+        // Create a dictionary to hold the key-value pairs
+        Dictionary<string, string> dictionary = new Dictionary<string, string>();
+
+        // Iterate through each object in the array with an index
+        for (int i = 0; i < jArray.Count; i++)
+        {
+            var item = jArray[i];
+            // Extract the key-value pairs and add them to the dictionary with an index prefix
+            foreach (var property in item.Children<JProperty>())
+            {
+                dictionary.Add($"{i}_{property.Name}", property.Value.ToString());
+            }
+        }
+
+        // Print the dictionary content
+        foreach (var kvp in dictionary)
+        {
+            Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+        }
+    }
+}
