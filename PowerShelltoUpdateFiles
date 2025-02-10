@@ -1,0 +1,12 @@
+# Define the line you want to add
+$lineToAdd = '"This is the new line you want to add"'
+
+# Get all JSON files in the cloned repository directory
+$files = Get-ChildItem -Path "C:\Path\To\Your\Cloned\Repository" -Filter "*.json" -Recurse
+
+# Loop through each file and add the line at the end
+foreach ($file in $files) {
+    Add-Content -Path $file.FullName -Value $lineToAdd
+}
+
+Write-Host 
