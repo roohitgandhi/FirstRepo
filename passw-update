@@ -34,7 +34,7 @@ Write-Output "Password reset complete for all specified IIS app pools."
 # Update Windows service passwords
 foreach ($service in $serviceNames) {
     Write-Output "Updating password for Windows service: $service"
-    $serviceSettings = Get-WmiObject -Class Win32_Service -Filter "Name='$service'"
+    $serviceSettings = Get-CimInstance -Class Win32_Service -Filter "Name='$service'"
     $serviceSettings.Change($null, $null, $null, $null, $newPassword, $null)
     Write-Output "Password updated for Windows service: $service"
 }
