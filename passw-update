@@ -1,0 +1,56 @@
+# Define variables
+$newPassword = "NewSecurePassword123!"  # Replace with your desired new password
+$serviceNames = @("Service1", "Service2")  # Replace with your service names
+$scheduledTaskNames = @("Task1", "Task2")  # Replace with your scheduled task names
+$username = "YourDomain\YourUsername"  # Replace with your username
+
+# Update IIS app pool passwords
+# Define variables
+$appPools = @{
+    "AppPool1" = "NewSecurePassword1!"
+    "AppPool2" = "NewSecurePassword2!"
+    "AppPool3" = "NewSecurePassword3!"
+    # Add more app pools and passwords as needed
+}
+
+# Update IIS app pool passwords
+foreach ($appPool in $appPools.Keys) {
+    Write-Output "Stopping IIS app pool: $appPool"
+    Stop-WebAppPool -Name $appPool
+    
+    Write-Output "Updating password for IIS app pool: $appPool"
+    $password = $appPools[$appPool]
+    $appPoolSettings = Get-WebConfigurationProperty -Filter "system.applicationHost/applicationPools/add[@name='$appPool']" -Name processModel
+    $appPoolSettings.password = $password
+    Set-WebConfigurationProperty -Filter "system.applicationHost/applicationPools/add[@name='$appPool']" -Name processModel -Value $appPoolSettings
+    
+    Write-Output "Starting IIS app pool: $appPool"
+    Start-WebAppPool -Name $appPool
+}
+
+Write-Output "Password reset complete for all specified IIS app pools."
+
+
+# Update Windows service passwords
+foreach ($service in $serviceNames) {
+    Write-Output "Updating password for Windows service: $service"
+    $serviceSettings = Get-WmiObject -Class Win32_Service -Filter "Name='$service'"
+    $serviceSettings.Change($null, $null, $null, $null, $newPassword, $null)
+    Write-Output "Password updated for Windows service: $service"
+}
+
+# Update scheduled task passwords
+foreach ($task in $scheduledTaskNames) {
+    Write-Output "Updating password for scheduled task: $task"
+    $action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c echo Updating password"
+    $principal = New-ScheduledTaskPrincipal -UserId $username -LogonType Password -RunLevel Highest
+    $settings = New-ScheduledTaskSettingsSet
+    $trigger = New-ScheduledTaskTrigger -AtLogon
+    
+    Unregister-ScheduledTask -TaskName $task -Confirm:$false
+    Register-ScheduledTask -Action $action -Principal $principal -TaskName $task -Settings $settings -Trigger $trigger
+    Set-ScheduledTaskPrincipal -TaskName $task -UserId $username -LogonType Password -RunLevel Highest -Password $newPassword
+    Write-Output "Password updated for scheduled task: $task"
+}
+
+Write-Output "Password reset complete for all specified app pools, services, and scheduled tasks."
