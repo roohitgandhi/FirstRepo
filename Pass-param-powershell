@@ -1,0 +1,29 @@
+# Example script to fetch the password
+$password = "FetchedPassword123!"  # Replace this with the actual code to fetch the password
+
+# Call the second script and pass the password as a parameter
+.\UpdateAppPoolPassword.ps1 -AppPoolPassword $password
+------------------------2nd Script---------------------------------------------------
+param (
+    [string]$AppPoolPassword
+)
+
+# Define variables
+$appPools = @("AppPool1", "AppPool2", "AppPool3")  # Replace with your app pool names
+
+# Update IIS app pool passwords
+foreach ($appPool in $appPools) {
+    Write-Output "Stopping IIS app pool: $appPool"
+    Stop-WebAppPool -Name $appPool
+    
+    Write-Output "Updating password for IIS app pool: $appPool"
+    $appPoolSettings = Get-WebConfigurationProperty -Filter "system.applicationHost/applicationPools/add[@name='$appPool']" -Name processModel
+    $appPoolSettings.password = $AppPoolPassword
+    Set-WebConfigurationProperty -Filter "system.applicationHost/applicationPools/add[@name='$appPool']" -Name processModel -Value $appPoolSettings
+    
+    Write-Output "Starting IIS app pool: $appPool"
+    Start-WebAppPool -Name $appPool
+}
+
+Write-Output "Password reset complete for all specified IIS app pools."
+
