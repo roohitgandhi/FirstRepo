@@ -1,0 +1,14 @@
+# Retrieve the service using WMI
+$service = Get-WmiObject -Class Win32_Service -Filter "Name='YourServiceName'"
+
+# Update the account credentials.
+# The parameters, in order, are (StartMode, DesktopInteract, ErrorControl, BinaryPathName, LoadOrderGroup, LoadOrderGroupDependencies, ServiceDependencies, ServiceStartName, Password).
+# For unchanged parameters, pass $null.
+$result = $service.Change($null, $null, $null, $null, $null, $null, $null, "DOMAIN\Username", "NewPasswordHere")
+
+# Check the result to ensure it succeeded.
+if ($result.ReturnValue -eq 0) {
+    Write-Host "Service credentials updated successfully."
+} else {
+    Write-Host "Failed to update service credentials. Error code:" $result.ReturnValue
+}
