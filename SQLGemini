@@ -1,0 +1,11 @@
+SELECT
+    OBJECT_SCHEMA_NAME(sm.object_id) AS SchemaName,
+    OBJECT_NAME(sm.object_id) AS StoredProcedureName,
+    sm.definition AS StoredProcedureDefinition
+FROM
+    sys.sql_modules AS sm
+INNER JOIN
+    sys.objects AS o ON sm.object_id = o.object_id
+WHERE
+    o.type = 'P' -- 'P' indicates stored procedures
+    AND sm.definition LIKE '%YourTableName.YourColumnName%'; -- Replace with your table and column
