@@ -1,0 +1,85 @@
+function Get-ServicePassword {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [string]$ServiceName
+    )
+
+    begin {
+        # Check if the service exists
+        if (-not (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
+            Write-Error "Service '$ServiceName' not found."
+            return
+        }
+    }
+
+    process {
+        try {
+            # Get the service object
+            $service = Get-Service -Name $ServiceName
+
+            # Get the service configuration using sc.exe
+            $serviceConfig = sc.exe qc "$ServiceName"
+
+            # Parse the output to find the password
+            $logonAsLine = $serviceConfig | Where-Object { $_ -match '^        LOGON_AS_NAME:' }
+
+            if ($logonAsLine) {
+                $logonAs = ($logonAsLine -split ':')[1].Trim()
+
+                # Check if the service is running as LocalSystem, LocalService, or NetworkService
+                if ($logonAs -match 'LocalSystem|LocalService|NetworkService') {
+                    Write-Warning "Service '$ServiceName' is running under a built-in account and does not have a password."
+                    return
+                }
+
+                # Attempt to retrieve the password from the registry (Requires elevated privileges)
+                try {
+
+                    $RegistryPath = "HKLM:\SYSTEM\CurrentControlSet\services\$ServiceName"
+                    $ImagePath = (Get-ItemProperty -Path $RegistryPath -Name ImagePath).ImagePath
+
+                    # Check if the ImagePath contains a password. This is uncommon, but possible.
+                    if ($ImagePath -match '/password:"(.*?)"') {
+                        $password = $Matches[1]
+                        Write-Output "Service '$ServiceName' password (from ImagePath): $password"
+                        return
+                    }
+
+                    # Attempt to get the password from LSA secrets. This will usually fail with access denied unless you have very high privileges.
+                    try {
+                        $secret = (Get-ItemProperty "HKLM:\SECURITY\Policy\Secrets\$ServiceName").(Default)
+                        if ($secret) {
+                           Write-Warning "Attempting to decode LSA secret. This will usually fail with access denied. Requires very high privileges."
+                            #This section requires further research and is highly dependent on the OS and security configuration.
+                            #Decoding LSA secrets is complex and not easily accomplished via powershell.
+                            #A common method would be to use a tool like mimikatz, which is not included in powershell.
+                            #Mimikatz or similar tools must be used with extreme care and only on systems you own or have explicit permission to test.
+                            #Example (This example is for demonstration purposes and is NOT a complete or functional solution):
+                            #$decodedSecret = Invoke-Expression "mimikatz.exe privilege::debug sekurlsa::logonscrets $ServiceName"
+                            #Write-Output "Service '$ServiceName' password (from LSA secrets): $decodedSecret"
+
+                        }
+                    }
+                    catch {
+                        Write-Warning "Could not access LSA secrets for service '$ServiceName'. Access denied or secret not found."
+                    }
+
+                }
+                catch {
+                    Write-Error "Failed to retrieve service password: $($_.Exception.Message)"
+                }
+            }
+            else {
+                Write-Error "Could not determine logon account for service '$ServiceName'."
+            }
+
+        }
+        catch {
+            Write-Error "Error processing service '$ServiceName': $($_.Exception.Message)"
+        }
+    }
+}
+
+# Example usage:
+Get-ServicePassword -ServiceName "MyService"
