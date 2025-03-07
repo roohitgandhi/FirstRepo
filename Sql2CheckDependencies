@@ -1,0 +1,16 @@
+DECLARE @TableName NVARCHAR(128) = 'your_table_name'
+DECLARE @ColumnName NVARCHAR(128) = 'your_column_name'
+
+SELECT 
+    OBJECT_NAME(referencing_id) AS ReferencingObject,
+    o.type_desc AS ReferencingObjectType,
+    c.name AS ReferencingColumnName,
+    r.referenced_entity_name AS ReferencedTableName,
+    r.referenced_minor_name AS ReferencedColumnName
+FROM 
+    sys.sql_expression_dependencies AS r
+    INNER JOIN sys.columns AS c ON r.referencing_id = c.object_id
+    INNER JOIN sys.objects AS o ON c.object_id = o.object_id
+WHERE 
+    r.referenced_entity_name = @TableName
+    AND r.referenced_minor_name = @ColumnName;
