@@ -1,0 +1,13 @@
+DECLARE @ColumnName NVARCHAR(128) = 'your_column_name'
+
+SELECT 
+    OBJECT_NAME(o.object_id) AS ProcedureName,
+    m.definition AS ProcedureDefinition
+FROM 
+    sys.sql_modules AS m
+    INNER JOIN sys.objects AS o ON m.object_id = o.object_id
+WHERE 
+    m.definition LIKE '%' + @ColumnName + '%'
+    AND o.type = 'P'
+ORDER BY 
+    ProcedureName;
