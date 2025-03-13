@@ -1,0 +1,62 @@
+# Define the username and the new password
+$username = "YourUsername"
+$newPassword = "YourNewPassword"
+$logFile = "C:\Logs\UpdateScheduledTasks.log"
+
+# Function to log messages
+function Log-Message {
+    param (
+        [string]$message
+    )
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $logMessage = "$timestamp - $message"
+    Add-Content -Path $logFile -Value $logMessage
+}
+
+try {
+    Log-Message "Starting scheduled task password update process..."
+
+    # Fetch all scheduled tasks running with the specified username
+    $tasks = Get-ScheduledTask | Where-Object { 
+        $_.Principal.UserId -eq $username 
+    }
+
+    if ($tasks.Count -eq 0) {
+        Log-Message "No scheduled tasks found for user $username."
+        Write-Host "No scheduled tasks found for user $username."
+        exit
+    }
+
+    foreach ($task in $tasks) {
+        try {
+            # Stop the scheduled task
+            Log-Message "Stopping task: $($task.TaskName)"
+            Stop-ScheduledTask -TaskName $task.TaskName
+            Start-Sleep -Seconds 2  # Brief pause to ensure the task stops
+
+            # Update the task's password using schtasks.exe
+            Log-Message "Updating password for task: $($task.TaskName)"
+            $taskPath = $task.TaskPath + $task.TaskName
+            $updateResult = schtasks /Change /TN $taskPath /RU $username /RP $newPassword
+            
+            # Verify if the update was successful
+            if ($updateResult -like "*SUCCESS*") {
+                Log-Message "Password updated successfully for task: $($task.TaskName)"
+                # Start the scheduled task
+                Log-Message "Starting task: $($task.TaskName)"
+                Start-ScheduledTask -TaskName $task.TaskName
+                Start-Sleep -Seconds 2  # Brief pause to ensure the task starts
+            } else {
+                throw "Failed to update password for task: $($task.TaskName)"
+            }
+        } catch {
+            Log-Message "Error updating task $($task.TaskName): $_"
+        }
+    }
+
+    Log-Message "Password update process completed for all tasks."
+    Write-Host "Password update process completed for all tasks."
+} catch {
+    Log-Message "An error occurred: $_"
+    Write-Host "An error occurred: $_"
+}
