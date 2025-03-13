@@ -1,0 +1,42 @@
+# Define the username and the new password
+$username = "YourUsername"
+$newPassword = "YourNewPassword"
+
+try {
+    # Fetch all scheduled tasks running with the specified username
+    $tasks = Get-ScheduledTask | Where-Object { 
+        $_.Principal.UserId -eq $username 
+    }
+
+    if ($tasks.Count -eq 0) {
+        Write-Host "No scheduled tasks found for user $username."
+        exit
+    }
+
+    foreach ($task in $tasks) {
+        try {
+            # Stop the scheduled task
+            Write-Host "Stopping task: $($task.TaskName)"
+            Stop-ScheduledTask -TaskName $task.TaskName
+            Start-Sleep -Seconds 2  # Brief pause to ensure the task stops
+
+            # Update the task's password
+            Write-Host "Updating password for task: $($task.TaskName)"
+            $taskPath = $task.TaskPath + $task.TaskName
+            $taskPrincipal = New-ScheduledTaskPrincipal -UserId $username -LogonType Password -RunLevel Highest
+            $taskSettings = New-ScheduledTaskSettingsSet
+            Register-ScheduledTask -TaskName $taskPath -Action $task.Actions -Principal $taskPrincipal -Settings $taskSettings -Password $newPassword -Force
+            
+            # Start the scheduled task
+            Write-Host "Starting task: $($task.TaskName)"
+            Start-ScheduledTask -TaskName $task.TaskName
+            Start-Sleep -Seconds 2  # Brief pause to ensure the task starts
+        } catch {
+            Write-Host "Error updating task $($task.TaskName): $_"
+        }
+    }
+
+    Write-Host "Password update process completed for all tasks."
+} catch {
+    Write-Host "An error occurred: $_"
+}
