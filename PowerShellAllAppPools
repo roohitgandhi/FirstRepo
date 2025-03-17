@@ -1,0 +1,31 @@
+# Import the WebAdministration module
+Import-Module WebAdministration
+
+# Specify the new username and password
+$targetUsername = "YourUsername"
+$newPassword = "YourNewPassword"
+
+# Get all Application Pools
+$appPools = Get-ChildItem IIS:\AppPools
+
+# Loop through each Application Pool
+foreach ($appPool in $appPools) {
+    # Get the Process Model Identity of the App Pool
+    $appPoolIdentity = $appPool.processModel.userName
+
+    # Check if the App Pool is running under the target username
+    if ($appPoolIdentity -eq $targetUsername) {
+        # Stop the Application Pool
+        Write-Host "Stopping App Pool: $($appPool.Name)"
+        Stop-WebAppPool -Name $appPool.Name
+
+        # Update the username and password for the Application Pool
+        Write-Host "Updating credentials for App Pool: $($appPool.Name)"
+        Set-ItemProperty IIS:\AppPools\$($appPool.Name) -Name processModel.userName -Value $targetUsername
+        Set-ItemProperty IIS:\AppPools\$($appPool.Name) -Name processModel.password -Value $newPassword
+
+        # Start the Application Pool
+        Write-Host "Starting App Pool: $($appPool.Name)"
+        Start-WebAppPool -Name $appPool.Name
+    }
+}
