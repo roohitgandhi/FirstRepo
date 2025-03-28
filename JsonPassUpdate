@@ -1,0 +1,65 @@
+using System;
+using System.IO;
+using Newtonsoft.Json.Linq; // Install the Newtonsoft.Json package via NuGet
+using NLog; // Install the NLog package via NuGet
+
+class Program
+{
+    // Initialize the logger
+    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
+    static void Main(string[] args)
+    {
+        try
+        {
+            // Path to the appsettings.json file
+            string filePath = @"C:\Path\To\Your\appsettings.json";
+
+            // Validate if the file exists
+            if (!File.Exists(filePath))
+            {
+                Logger.Error($"File not found: {filePath}");
+                Console.WriteLine("Error: The specified configuration file does not exist.");
+                return;
+            }
+
+            Logger.Info("Starting to update the password in appsettings.json.");
+
+            // Read the JSON file
+            string jsonContent = File.ReadAllText(filePath);
+            Logger.Debug("Read the JSON file successfully.");
+
+            // Parse the JSON content
+            JObject jsonObject = JObject.Parse(jsonContent);
+
+            // Update the password value
+            jsonObject["ConnectionStrings"]["Password"] = "NewPassword123";
+            Logger.Info("Updated the password value in the JSON object.");
+
+            // Write the updated JSON content back to the file
+            File.WriteAllText(filePath, jsonObject.ToString());
+            Logger.Info($"Password updated successfully in: {filePath}");
+
+            Console.WriteLine("Password updated successfully!");
+        }
+        catch (FileNotFoundException ex)
+        {
+            Logger.Error(ex, "The configuration file was not found.");
+            Console.WriteLine("Error: The configuration file does not exist.");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.Error(ex, "Access denied to the configuration file.");
+            Console.WriteLine("Error: Access to the file is denied. Check your file permissions.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, "An unexpected error occurred.");
+            Console.WriteLine("An unexpected error occurred. Please check the logs for details.");
+        }
+        finally
+        {
+            Logger.Info("Operation completed.");
+        }
+    }
+}
