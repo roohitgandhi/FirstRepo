@@ -1,0 +1,32 @@
+# Define database connection parameters
+$serverName = "YourServerName"
+$databaseName = "YourDatabaseName"
+
+# SQL connection string with Integrated Security
+$connectionString = "Server=$serverName;Database=$databaseName;Integrated Security=True;"
+
+# SQL query to update records
+$query = "UPDATE YourTableName SET YourColumnName = 'NewValue' WHERE SomeColumn = 'ConditionValue';"
+
+# Load SQL Server assemblies
+Add-Type -AssemblyName "System.Data"
+
+# Create and open the SQL connection
+$connection = New-Object System.Data.SqlClient.SqlConnection
+$connection.ConnectionString = $connectionString
+$connection.Open()
+
+# Create the SQL command
+$command = $connection.CreateCommand()
+$command.CommandText = $query
+
+# Execute the query
+try {
+    $rowsAffected = $command.ExecuteNonQuery()
+    Write-Output "Query executed successfully. Rows affected: $rowsAffected"
+} catch {
+    Write-Error "Error executing query: $_"
+} finally {
+    # Close the connection
+    $connection.Close()
+}
