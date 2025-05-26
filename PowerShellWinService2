@@ -1,0 +1,43 @@
+# Define service details
+$serviceName = "YourServiceName"
+$newPassword = "YourNewPassword"
+$existingUsername = "YourExistingUser"
+
+try {
+    # Get the service object using CIM
+    $service = Get-CimInstance -ClassName Win32_Service -Filter "Name='$serviceName'"
+    
+    # Validate if the service exists
+    if ($service -eq $null) {
+        throw "Service '$serviceName' not found."
+    }
+
+    Write-Host "Updating password for service: $serviceName" -ForegroundColor Yellow
+
+    # Update the password while keeping the same username
+    $updateResult = $service.Change($null, $null, $null, $null, $null, $null, $existingUsername, $newPassword)
+
+    if ($updateResult -eq 0) {
+        Write-Host "Password updated successfully for $serviceName." -ForegroundColor Green
+    } else {
+        throw "Failed to update password for $serviceName. Error Code: $updateResult"
+    }
+
+    # Check if the service is running before attempting restart
+    if ($service.State -eq "Running") {
+        Write-Host "$serviceName is Running. Proceeding with restart..." -ForegroundColor Yellow
+        Stop-Service -Name $serviceName -Force -ErrorAction Stop
+
+        Start-Sleep -Seconds 3  # Short delay before restarting
+
+        Write-Host "Starting $serviceName..." -ForegroundColor Cyan
+        Start-Service -Name $serviceName -ErrorAction Stop
+
+        Write-Host "$serviceName restarted successfully." -ForegroundColor Green
+    } else {
+        Write-Host "$serviceName is NOT running. Skipping restart." -ForegroundColor Red
+    }
+}
+catch {
+    Write-Host "Error: $_" -ForegroundColor Red
+}
