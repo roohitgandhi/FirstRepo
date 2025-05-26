@@ -7,3 +7,17 @@ foreach ($service in $services) {
         Write-Host "$($service.Name) is $($service.State)" -ForegroundColor Red
     }
 }
+$services = Get-CimInstance -ClassName Win32_Service
+
+foreach ($service in $services) {
+    if ($service.State -eq "Running") {
+        Write-Host "$($service.Name) is Running. Stopping..." -ForegroundColor Yellow
+        Stop-Service -Name $service.Name -Force
+        Start-Sleep -Seconds 3  # Optional delay before starting
+        Write-Host "Starting $($service.Name)..." -ForegroundColor Cyan
+        Start-Service -Name $service.Name
+        Write-Host "$($service.Name) has been restarted successfully." -ForegroundColor Green
+    } else {
+        Write-Host "$($service.Name) is $($service.State). Skipping restart." -ForegroundColor Red
+    }
+}
