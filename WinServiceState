@@ -1,0 +1,9 @@
+$services = Get-CimInstance -ClassName Win32_Service
+
+foreach ($service in $services) {
+    if ($service.State -eq "Running") {
+        Write-Host "$($service.Name) is Running" -ForegroundColor Green
+    } else {
+        Write-Host "$($service.Name) is $($service.State)" -ForegroundColor Red
+    }
+}
