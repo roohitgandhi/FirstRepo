@@ -1,0 +1,37 @@
+# Define service details
+$ServiceName = "YourServiceName"
+$NewUsername = "YourDomain\NewUser"
+$NewPassword = "YourSecurePassword"
+
+# Function to check and wait for service status
+function Wait-ForServiceStatus {
+    param (
+        [string]$ServiceName,
+        [string]$DesiredStatus,
+        [int]$Timeout = 60
+    )
+    $Stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ((Get-Service -Name $ServiceName).Status -ne $DesiredStatus) {
+        Start-Sleep -Seconds 2
+        if ($Stopwatch.Elapsed.TotalSeconds -ge $Timeout) {
+            throw "Service '$ServiceName' did not reach state '$DesiredStatus' within timeout"
+        }
+    }
+}
+
+try {
+    Write-Output "Updating service credentials..."
+    & sc.exe config $ServiceName obj= $NewUsername password= $NewPassword | Out-Null
+
+    Write-Output "Stopping service..."
+    Stop-Service -Name $ServiceName -Force
+    Wait-ForServiceStatus -ServiceName $ServiceName -DesiredStatus "Stopped"
+
+    Write-Output "Starting service..."
+    Start-Service -Name $ServiceName
+    Wait-ForServiceStatus -ServiceName $ServiceName -DesiredStatus "Running"
+
+    Write-Output "Service '$ServiceName' restarted successfully with updated credentials."
+} catch {
+    Write-Output "An error occurred: $_"
+}
