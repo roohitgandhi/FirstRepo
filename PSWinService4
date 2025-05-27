@@ -1,0 +1,128 @@
+<#
+.SYNOPSIS
+    Updates the password of all Windows services running under a specific account.
+
+.DESCRIPTION
+    This script queries all Windows services running under a given account,
+    updates each service’s credentials using the WMI Change method,
+    stops the service (with a robust wait mechanism and a forced process kill as a fallback),
+    and then restarts the service. 
+
+.NOTES
+    - Run as Administrator!
+    - Modify $targetAccount and $newPassword as needed.
+#>
+
+# Parameters - Customize these values before running the script
+$targetAccount = "YourDomain\User"      # The specific account under which services run
+$newPassword   = "YourNewPassword"        # The new password to set for these services
+
+# Function: Wait until a service reaches a desired status (Running, Stopped, etc.)
+function Wait-ForServiceStatus {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$ServiceName,
+        [Parameter(Mandatory=$true)]
+        [string]$DesiredStatus,
+        [Parameter(Mandatory=$false)]
+        [int]$Timeout = 60
+    )
+    $stopWatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ((Get-Service -Name $ServiceName).Status -ne $DesiredStatus) {
+        Start-Sleep -Seconds 2
+        if ($stopWatch.Elapsed.TotalSeconds -ge $Timeout) {
+            throw "Service '$ServiceName' did not reach state '$DesiredStatus' within $Timeout seconds."
+        }
+    }
+}
+
+# Function: Update service credentials using WMI
+function Update-ServiceCredentials {
+    param(
+        [Parameter(Mandatory=$true)]
+        [Object]$Service,      # WMI service object
+        [Parameter(Mandatory=$true)]
+        [string]$Account,
+        [Parameter(Mandatory=$true)]
+        [string]$Password
+    )
+    try {
+        # Pass $null for parameters that remain unchanged.
+        $result = $Service.Change($null, $null, $null, $null, $null, $null, $Account, $Password, $null)
+        if ($result -ne 0) {
+            throw "WMI Change method returned error code: $result"
+        }
+        Write-Output "Updated credentials for service '$($Service.Name)'."
+    } catch {
+        throw "Failed to update credentials for service '$($Service.Name)': $_"
+    }
+}
+
+# Fetch all services running under the target account
+$services = Get-WmiObject -Class Win32_Service | Where-Object { $_.StartName -eq $targetAccount }
+
+if (-not $services) {
+    Write-Output "No services found running under account '$targetAccount'."
+    return
+}
+
+foreach ($service in $services) {
+    Write-Output "---------------------------------------------"
+    Write-Output "Processing Service: $($service.Name) - $($service.DisplayName)"
+    
+    # Update credentials (password) for the service
+    try {
+        Update-ServiceCredentials -Service $service -Account $targetAccount -Password $newPassword
+    } catch {
+        Write-Warning "$_"
+        continue
+    }
+    
+    # If the service is running, attempt to stop it
+    if ($service.State -eq "Running") {
+        Write-Output "Attempting to stop service '$($service.Name)'..."
+        try {
+            Stop-Service -Name $service.Name -ErrorAction Stop
+            Write-Output "Stop command sent to service '$($service.Name)'."
+        } catch {
+            Write-Warning "Stop-Service cmdlet failed for '$($service.Name)': $_"
+        }
+        
+        # Wait for the service to stop gracefully
+        try {
+            Wait-ForServiceStatus -ServiceName $service.Name -DesiredStatus "Stopped" -Timeout 30
+            Write-Output "Service '$($service.Name)' has stopped gracefully."
+        } catch {
+            Write-Warning "Service '$($service.Name)' did not stop gracefully. Attempting forceful termination..."
+            # Refresh service information to get the current ProcessID
+            $wmiService = Get-WmiObject -Class Win32_Service -Filter "Name='$($service.Name)'"
+            if ($wmiService.ProcessId -gt 0) {
+                try {
+                    Stop-Process -Id $wmiService.ProcessId -Force
+                    Write-Output "Forcefully terminated process for service '$($service.Name)'."
+                } catch {
+                    Write-Error "Failed to kill process for service '$($service.Name)': $_"
+                    continue
+                }
+            } else {
+                Write-Warning "No active process could be found for '$($service.Name)'."
+            }
+        }
+    }
+    else {
+        Write-Output "Service '$($service.Name)' is not running. Skipping stop step."
+    }
+    
+    # Attempt to start the service
+    Write-Output "Attempting to start service '$($service.Name)'..."
+    try {
+        Start-Service -Name $service.Name -ErrorAction Stop
+        Wait-ForServiceStatus -ServiceName $service.Name -DesiredStatus "Running" -Timeout 30
+        Write-Output "Service '$($service.Name)' started successfully."
+    } catch {
+        Write-Error "Failed to start service '$($service.Name)': $_"
+    }
+}
+
+Write-Output "---------------------------------------------"
+Write-Output "Completed updating credentials and restarting services running under '$targetAccount'."
