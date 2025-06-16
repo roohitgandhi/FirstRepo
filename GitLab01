@@ -1,0 +1,22 @@
+image: mcr.microsoft.com/dotnet/sdk:8.0
+
+stages:
+  - build
+  - test
+
+variables:
+  DOTNET_VERSION: "8.0"
+
+before_script:
+  - dotnet --version
+
+build:
+  stage: build
+  script:
+    - dotnet restore
+    - dotnet build --configuration Release
+
+test:
+  stage: test
+  script:
+    - dotnet test --configuration Release
